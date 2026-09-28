@@ -1,0 +1,4 @@
+.venv/
+records/
+logs/
+.git/

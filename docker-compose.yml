@@ -1,0 +1,8 @@
+services:
+  collector:
+    build: .
+    image: hq-collector
+    restart: unless-stopped
+    volumes:
+      - ./records:/app/records
+      - ./logs:/app/logs
