@@ -6,21 +6,26 @@ import time
 import logging
 from pathlib import Path
 from datetime import datetime, timezone
+import signal
 
-logging.Formatter.converter = time.gmtime
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s %(levelname)s %(message)s",
-    datefmt="%Y-%m-%dT%H:%M:%SZ",
-    handlers=[logging.FileHandler("collector.log"),logging.StreamHandler()],
-)
+
 
 # CONSTANTS
 BASE_URL = "https://pannes.hydroquebec.com/pannes/donnees/v3_0/"
 HEADERS = {"User-Agent": "mtl-outage-research/0.1 (conor.lane1995@gmail.com)"}
 RAW_DIR = Path(__file__).parent / "records"
+LOG_DIR = Path(__file__).parent / "logs"
 TIMEOUT = 20
 POLL_SECONDS = 600
+
+logging.Formatter.converter = time.gmtime
+LOG_DIR.mkdir(parents=True, exist_ok=True)
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s %(levelname)s %(message)s",
+    datefmt="%Y-%m-%dT%H:%M:%SZ",
+    handlers=[logging.FileHandler(LOG_DIR / "collector.log"),logging.StreamHandler()],
+)
 
 
 # Fetch the version, feed is a string either "bis" or "aip"
@@ -62,11 +67,16 @@ def poll_feed(feed):
 
 if __name__ == "__main__":
     logging.info(f"collector started, polling every {POLL_SECONDS}s")
-    while True:
-        for feed in ["bis", "aip"]:
-            try:
-                status, version = poll_feed(feed)
-                logging.info(f"feed={feed} status={status} version={version}")
-            except (requests.RequestException, ValueError) as e:
-                logging.warning(f"feed={feed} status=failed error={e!r}")
-        time.sleep(POLL_SECONDS)
+    try:
+        while True:
+            for feed in ["bis", "aip"]:
+                try:
+                    status, version = poll_feed(feed)
+                    logging.info(f"feed={feed} status={status} version={version}")
+                except (requests.RequestException, ValueError) as e:
+                    logging.warning(f"feed={feed} status=failed error={e!r}")
+            time.sleep(POLL_SECONDS)
+    except Exception:
+        logging.exception("collector crashed")
+    raise                
+       
