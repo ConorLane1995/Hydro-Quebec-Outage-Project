@@ -6,3 +6,11 @@ services:
     volumes:
       - ./records:/app/records
       - ./logs:/app/logs
+
+  roadwork:
+    build: .
+    command: python roadwork_collector.py
+    restart: unless-stopped
+    volumes:
+      - ./records:/app/records
+      - ./logs:/app/logs

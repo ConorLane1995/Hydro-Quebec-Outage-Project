@@ -1,0 +1,8 @@
+2026-09-29T21:22:36Z INFO roadwork archiver started, polling every 14400s
+2026-09-29T21:22:40Z INFO file=entraves status=saved path=/Users/conorlane/Documents/Python/Hydro-Quebec-Outage-Project/roadwork_records/entraves/2026/09/29/entraves_20260929T212240Z.csv.gz
+2026-09-29T21:22:44Z WARNING file=impacts status=failed error=ValueError("impacts: unexpected CSV header 'id_request,streetid,streetimpactwidth,streetimpacttype,nbfreeparkingplace,sidewalk_blockedtype,backs'")
+2026-09-29T21:22:49Z INFO file=infos status=saved path=/Users/conorlane/Documents/Python/Hydro-Quebec-Outage-Project/roadwork_records/infos/2026/09/29/infos_20260929T212249Z.json.gz
+2026-09-29T21:32:13Z INFO roadwork archiver started, polling every 14400s
+2026-09-29T21:32:15Z INFO file=entraves status=unchanged
+2026-09-29T21:32:17Z INFO file=impacts status=saved path=/Users/conorlane/Documents/Python/Hydro-Quebec-Outage-Project/records/roadwork_records/impacts/2026/09/29/impacts_20260929T213217Z.csv.gz
+2026-09-29T21:32:19Z INFO file=infos status=unchanged
