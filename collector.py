@@ -7,8 +7,7 @@ import logging
 from pathlib import Path
 from datetime import datetime, timezone
 import signal
-
-
+from zoneinfo import ZoneInfo
 
 # CONSTANTS
 BASE_URL = "https://pannes.hydroquebec.com/pannes/donnees/v3_0/"
@@ -17,6 +16,7 @@ RAW_DIR = Path(__file__).parent / "records"
 LOG_DIR = Path(__file__).parent / "logs"
 TIMEOUT = 20
 POLL_SECONDS = 600
+MTL = ZoneInfo("America/Toronto")
 
 logging.Formatter.converter = time.gmtime
 LOG_DIR.mkdir(parents=True, exist_ok=True)
@@ -27,7 +27,6 @@ logging.basicConfig(
     handlers=[logging.FileHandler(LOG_DIR / "collector.log"),logging.StreamHandler()],
 )
 
-
 # Fetch the version, feed is a string either "bis" or "aip"
 def fetch_version(feed):
     url = f"{BASE_URL}{feed}version.json"
@@ -36,18 +35,18 @@ def fetch_version(feed):
     version = response.json()
     return version
 
-def raw_path(feed, version):
-    if not (len(version) == 14 and version.isdigit()):
-        raise ValueError(f"unexpected version format: {version!r}")
+def raw_path(feed, ts_utc):
+    return RAW_DIR / feed / f"{ts_utc:%Y/%m/%d}" / f"{ts_utc:%Y%m%dT%H%M%SZ}.json.gz"
 
-    year = version[0:4]
-    month = version[4:6]
-    day = version[6:8]
-    return RAW_DIR / feed / year / month / day / f"{version}.json.gz"
+def version_to_utc(version, fetched_utc):
+    naive = datetime.strptime(version, "%Y%m%d%H%M%S")
+    candidates = [naive.replace(tzinfo=MTL, fold=f).astimezone(timezone.utc) for f in (0, 1)]
+    valid = [c for c in candidates if c <= fetched_utc]
+    return max(valid) if valid else min(candidates)
 
 def poll_feed(feed):
     version = fetch_version(feed)
-    path = raw_path(feed,version)
+    path = raw_path(feed, version_to_utc(version, datetime.now(timezone.utc)))
 
     if path.exists():
         return "unchanged", version
@@ -78,5 +77,5 @@ if __name__ == "__main__":
             time.sleep(POLL_SECONDS)
     except Exception:
         logging.exception("collector crashed")
-    raise                
+        raise                
        
