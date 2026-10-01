@@ -1,5 +1,7 @@
 .venv/
-.venv/
+.env
 records/
+records_old/
 collector.log
 logs/
+.DS_Store
